@@ -1,0 +1,18 @@
+# The group's shared Python environment. Everyone installs exactly this.
+#
+#   Create:  conda env create -f environment.yml
+#   Use:     conda activate lefinal          (in every new terminal)
+#   Update:  conda env update -f environment.yml --prune   (after someone changes this file)
+#
+# Change versions here, commit, and tell the group to run the update command.
+name: lefinal
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - ffmpeg=7.1.1  # encodes/decodes dataset videos; this version is LeRobot's known-good fallback
+  - pip
+  - pip:
+      # feetech: SO-101 servos · core-scripts: record/replay/calibrate · training: train policies
+      # smolvla: the SmolVLA policy, for comparing against ACT
+      - lerobot[feetech,core-scripts,training,smolvla]==0.6.1

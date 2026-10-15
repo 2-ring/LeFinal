@@ -1,0 +1,9 @@
+# This computer's ports and cameras
+local.toml
+
+# Training runs and logs
+outputs/
+wandb/
+
+__pycache__/
+.DS_Store
