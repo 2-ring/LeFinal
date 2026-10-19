@@ -1,18 +1,37 @@
-# The group's shared Python environment. Everyone installs exactly this.
+# SO-101 team setup using Hiwonder's LeRobot source bundle.
+# Based on the setup instructions used for Rohit's Mac; not an exact lockfile
+# exported from his installed environment.
 #
-#   Create:  conda env create -f environment.yml
-#   Use:     conda activate lefinal          (in every new terminal)
-#   Update:  conda env update -f environment.yml --prune   (after someone changes this file)
+# 1. From the team repository:
+#      conda env create -f environment.yml
+#      conda activate so101
+# 2. Extract the SAME Hiwonder lerobot.zip used by the team.
+#    Keep that source folder separate from the team repository.
+# 3. Inside the extracted lerobot folder (containing pyproject.toml):
+#      python -m pip install -e ".[feetech]"
+#    This installs LeRobot and its Python dependencies into this environment.
+#    Keep the extracted folder: the editable install points to it.
 #
-# Change versions here, commit, and tell the group to run the update command.
-name: lefinal
+# Bundle source: Hiwonder SO-ARM101 manual, section 2.2.2
+# https://docs.hiwonder.com/projects/LeRobot/en/latest/docs/SO_ARM101_Open_Source_6_Axis_Robotic_Arm_User_Manual.html
+# Use the team's original ZIP for consistency; a future download may differ.
+# Do not substitute the latest upstream LeRobot release without testing.
+#
+# Verify installation:
+#   python -c "import lerobot; print(lerobot.__file__)"
+#   lerobot-calibrate --help
+#   python -m lerobot.teleoperate --help
+#
+# Machine-specific setup remains separate: USB ports, camera indices,
+# camera permissions, and calibration files. Calibration is tied to each
+# physical arm and its configured ID; this file does not transfer it.
+# This environment is intended for robot setup/teleoperation, not CUDA training.
+
+name: so101
 channels:
   - conda-forge
+  - nodefaults
 dependencies:
-  - python=3.12
-  - ffmpeg=7.1.1  # encodes/decodes dataset videos; this version is LeRobot's known-good fallback
+  - python=3.10.18
+  - ffmpeg=7.1.1
   - pip
-  - pip:
-      # feetech: SO-101 servos · core-scripts: record/replay/calibrate · training: train policies
-      # smolvla: the SmolVLA policy, for comparing against ACT
-      - lerobot[feetech,core-scripts,training,smolvla]==0.6.1

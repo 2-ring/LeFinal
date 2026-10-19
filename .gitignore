@@ -1,9 +1,5 @@
-# This computer's ports and cameras
-local.toml
-
-# Training runs and logs
-outputs/
-wandb/
-
+config.env
+.venv/
 __pycache__/
+*.pyc
 .DS_Store
