@@ -15,16 +15,20 @@
 - Keep slack on the follower camera wire! The original setup through the notches doesn't allow the `wrist_roll` joint to turn and pulls on the wire.
 - Remember to put on camera caps when you finish!
 - Original setup observation: "Stickiness of the leader's gripper is okay, just be careful but we can move it, just needs a little extra force."
+- Don't twist either of the cameras, they are set at the exact rotations for clear, unblurred vision
 
 ### 1. Conda Environment
 
-- Set up the Conda environment.
+- Set up the Conda environment with the environment.yml file in the repo root
 
 ### 2. LeRobot Download
 
-- Downloaded LeRobot.
+- Download LeRobot zip from Section 2.2.2 of HiWonder docs
+  - https://docs.hiwonder.com/projects/LeRobot/en/latest/docs/SO_ARM101_Open_Source_6_Axis_Robotic_Arm_User_Manual.html
+- Don't put it in the repo
 
-### 3. Feetech (Servo Driver) Installation
+### 3. LeRobot & Feetech (Servo Driver) Installation
+- Make sure the conda env is activated and run this to install
 
 ```bash
 python -m pip install -e ".[feetech]"
@@ -41,7 +45,7 @@ lerobot-find-port
 | Follower | `/dev/tty.usbmodem5C4C1243751` |
 | Leader | `/dev/tty.usbmodem5C821083221` |
 
-NOTE: These will be different on another computer!
+NOTE: These might be different on another computer!
 
 ### 5. Calibrate Leader
 
