@@ -10,6 +10,7 @@ import shlex
 import subprocess
 import sys
 import tempfile
+import time
 
 ROOT = Path(__file__).resolve().parent.parent
 KEYS = ("FOLLOWER_PORT", "LEADER_PORT", "FOLLOWER_ID", "LEADER_ID", "ROBOT_CAMERAS")
@@ -69,6 +70,18 @@ def find_port(role):
     return ports[0]
 
 
+def read_preview_frame(camera, timeout_s=5):
+    """Give newly opened USB cameras time to deliver their first frame."""
+    deadline = time.monotonic() + timeout_s
+    while True:
+        try:
+            return camera.read()
+        except (OSError, RuntimeError):
+            if time.monotonic() >= deadline:
+                raise
+            time.sleep(0.1)
+
+
 def discover_cameras(previews):
     """Keep the finder's detected profiles alongside its numbered preview images."""
     from PIL import Image
@@ -85,7 +98,7 @@ def discover_cameras(previews):
         try:
             camera.connect()
             safe_device = str(device).replace("/", "_").replace("\\", "_")
-            Image.fromarray(camera.read()).save(previews / f"opencv_{safe_device}.png")
+            Image.fromarray(read_preview_frame(camera)).save(previews / f"opencv_{safe_device}.png")
             profiles[device] = {"width": camera.width, "height": camera.height, "fps": camera.fps}
         except (OSError, RuntimeError, ValueError) as error:
             print(f"Could not capture camera {device}: {error}")
