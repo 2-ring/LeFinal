@@ -1,0 +1,272 @@
+<title>MolmoAct2 Bring-Up Log</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: one lab-notebook column; setup diagram, a step log with state chips, one timing chart against the 1.0 s budget */
+:root{
+  --bg:#F3F6F6; --surface:#FFFFFF; --ink:#152025; --muted:#55666C; --line:#D3DCDE;
+  --accent:#0A6670; --accent-soft:#DCEDEE; --mark:#0089A0;
+  --done:#2D6A31; --done-soft:#E0EEDD; --block:#9B2C1F; --block-soft:#F7E1DD; --warn:#8A5300; --warn-soft:#F6E8CF;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1518; --surface:#162024; --ink:#E2E9EB; --muted:#98A9AF; --line:#2A3A40;
+  --accent:#5BC0C8; --accent-soft:#163A3E; --mark:#0FA3B8;
+  --done:#86C784; --done-soft:#1C3320; --block:#F09A8C; --block-soft:#3D1D18; --warn:#E6AE57; --warn-soft:#3A2B12; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1518; --surface:#162024; --ink:#E2E9EB; --muted:#98A9AF; --line:#2A3A40;
+  --accent:#5BC0C8; --accent-soft:#163A3E; --mark:#0FA3B8;
+  --done:#86C784; --done-soft:#1C3320; --block:#F09A8C; --block-soft:#3D1D18; --warn:#E6AE57; --warn-soft:#3A2B12; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
+.wrap{max-width:780px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.band{background:var(--surface);border-bottom:1px solid var(--line)}
+header .wrap{padding-block:40px 28px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,6vw,50px);line-height:1.04;margin:10px 0 14px;text-wrap:balance}
+.lede{font-size:18px;max-width:62ch;margin:0 0 16px}
+.status{display:flex;flex-wrap:wrap;gap:8px}
+main.wrap{padding-block:8px 72px}
+section{padding-top:40px}
+h2{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.1;margin:0 0 14px;text-wrap:balance}
+h3{font-size:16px;font-weight:600;margin:0 0 4px}
+p{margin:0 0 12px;max-width:66ch}
+ul{margin:0 0 12px;padding-left:20px}
+li{margin-bottom:8px;max-width:66ch}
+a{color:var(--accent);text-underline-offset:2px;overflow-wrap:anywhere}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:.86em;background:var(--accent-soft);color:var(--accent);padding:1px 5px;border-radius:3px;overflow-wrap:anywhere}
+.chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:4px;white-space:nowrap;line-height:1.6}
+.chip.done{background:var(--done-soft);color:var(--done)}
+.chip.block{background:var(--block-soft);color:var(--block)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.info{background:var(--accent-soft);color:var(--accent)}
+.note{color:var(--muted);font-size:14.5px}
+
+.pipe{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch;gap:0;margin:6px 0 14px}
+.node{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px;min-width:0}
+.node .k{font-family:var(--mono);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.node .n{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.15;margin:2px 0 6px}
+.node p{font-size:14px;margin:0}
+.arrow{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 8px;font-family:var(--mono);font-size:11.5px;color:var(--muted);text-align:center;gap:2px}
+.arrow b{font-size:18px;color:var(--accent);font-weight:500}
+@media (max-width:640px){
+  .pipe{grid-template-columns:1fr}
+  .arrow{flex-direction:row;padding:6px 0;gap:8px}
+  .arrow b{transform:rotate(90deg)}
+}
+
+.log{border-top:1px solid var(--line)}
+.step{display:grid;grid-template-columns:96px 1fr;gap:4px 14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.step .when{padding-top:2px}
+.step p{margin:0;font-size:15px}
+.step h3{margin-bottom:2px}
+@media (max-width:520px){.step{grid-template-columns:1fr}}
+
+.chart-box{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 16px 10px;margin:8px 0 14px}
+.chart-title{font-weight:600;margin:0 0 2px}
+.chart-sub{font-size:14px;color:var(--muted);margin:0 0 8px}
+.chart-scroll{overflow-x:auto}
+.chart-scroll svg{display:block;width:100%;min-width:540px;height:auto}
+svg text{font-family:var(--body);fill:var(--ink)}
+svg .axis{fill:var(--muted);font-family:var(--mono);font-size:11px}
+svg .val{font-family:var(--mono);font-size:12px;font-weight:500}
+svg .grid{stroke:var(--line);stroke-width:1}
+svg .budget{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:4 4}
+svg .bar{fill:var(--mark)}
+svg .hit{fill:transparent}
+svg .hit:hover + .bar, svg g:hover .bar{opacity:.85}
+details{margin-top:6px;font-size:14px}
+summary{cursor:pointer;color:var(--accent)}
+.table-scroll{overflow-x:auto;margin:8px 0 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:460px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+thead th{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.options{display:grid;gap:12px}
+.opt{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px}
+.opt-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-bottom:6px}
+.opt-head h3{margin:0}
+.opt p{margin:0;font-size:15px}
+footer{color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);margin-top:48px;padding-top:16px}
+</style>
+
+<header class="band">
+  <div class="wrap">
+    <p class="eyebrow">CSCI 2470 · SO-101 project · Lab session · Thursday, Nov 19, 2026</p>
+    <h1>Getting MolmoAct2 to drive our arm</h1>
+    <p class="lede">We tried to run MolmoAct2, the robot model Ai2 trained on SO-100 and SO-101 arms, on our follower arm with no training. Every piece now connects. The arm hasn't completed a run yet because of one timing problem, and the fix looks small.</p>
+    <div class="status">
+      <span class="chip done">✓ Setup connects end to end</span>
+      <span class="chip block">✕ No full run yet</span>
+      <span class="chip info">GPU fast enough: 0.17 s per answer</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section>
+  <h2>How it's wired</h2>
+  <div class="pipe" role="img" aria-label="The arm and two cameras plug into a laptop. The laptop sends camera frames over an SSH tunnel to a GPU server running MolmoAct2, which sends back one second of arm motion at a time.">
+    <div class="node">
+      <div class="k">On the table</div>
+      <div class="n">SO-101 follower</div>
+      <p>Plus the wrist camera and the stand camera. The leader arm stays unplugged.</p>
+    </div>
+    <div class="arrow"><b>→</b>USB</div>
+    <div class="node">
+      <div class="k">Robot computer</div>
+      <div class="n">Zyad's Mac</div>
+      <p>Runs LeRobot 0.7.0. Sends two camera frames, the arm's joint angles and the instruction.</p>
+    </div>
+    <div class="arrow"><b>⇄</b>SSH tunnel<br>~60 ms</div>
+    <div class="node">
+      <div class="k">GPU server</div>
+      <div class="n">MolmoAct2</div>
+      <p>Replies with 30 arm positions: one second of motion at 30 per second.</p>
+    </div>
+  </div>
+  <p class="note">The model needs an NVIDIA GPU, so it can't run on our Macs. The 48 GB GPUs on the Brown CS cluster were all in use, so we used a GPU server Zyad has access to. Only Zyad can reach that server for now.</p>
+</section>
+
+<section>
+  <h2>What we got through</h2>
+  <div class="log">
+    <div class="step">
+      <div class="when"><span class="chip done">Done</span></div>
+      <div><h3>Model installed and loaded</h3><p>LeRobot 0.7.0 and the 21 GB checkpoint on the GPU server, the robot software on the Mac.</p></div>
+    </div>
+    <div class="step">
+      <div class="when"><span class="chip done">Done</span></div>
+      <div><h3>Server accepts our camera images</h3><p>LeRobot's server expects 224×224 images for this model and refused our 640×480 frames. The model resizes images itself, so a small launcher script turns off that one check.</p></div>
+    </div>
+    <div class="step">
+      <div class="when"><span class="chip done">Done</span></div>
+      <div><h3>Our calibration file is used</h3><p>The new LeRobot looks in a differently named folder (<code>so_follower</code>, not <code>so101_follower</code>). We copied the team repo's file there. No recalibration was done.</p></div>
+    </div>
+    <div class="step">
+      <div class="when"><span class="chip done">Done</span></div>
+      <div><h3>Cameras identified</h3><p>On Zyad's Mac the wrist camera is number 0 and the stand camera number 1. The terminal app needed camera permission in macOS settings first.</p></div>
+    </div>
+    <div class="step">
+      <div class="when"><span class="chip done">Done</span></div>
+      <div><h3>Robot connects to the model</h3><p>The robot side kept its 30 Hz control loop with no missed ticks.</p></div>
+    </div>
+    <div class="step">
+      <div class="when"><span class="chip block">Blocked</span></div>
+      <div><h3>A full attempt at "pick up the red tape roll"</h3><p>Both tries stopped on the second request to the model with the error "Invalid RTC delay". The arm then returned to its start position. The next section explains why.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Why it stopped</h2>
+  <p>Each answer from the model is one second of motion. To keep the arm moving, the robot asks for the next answer before the current one runs out, and it guesses how late that answer will be from how long the <strong>first</strong> answer took. The first answer is slow, so the robot asked the model to skip more steps than one answer contains, and the server refused.</p>
+
+  <div class="chart-box">
+    <p class="chart-title">Time to get an answer back, in seconds</p>
+    <p class="chart-sub">Answers that take longer than the dashed line arrive after the current second of motion has run out.</p>
+    <div class="chart-scroll">
+      <svg viewBox="0 0 640 196" role="img" aria-labelledby="chart-desc">
+        <desc id="chart-desc">Run 1 first answer took 1.81 seconds, run 2 first answer took 1.20 seconds, and a typical answer after the first takes 0.17 seconds. The budget is 1.0 second.</desc>
+        <!-- scale: x = 200 + 200 * seconds, 0 to 2.0 s -->
+        <line class="grid" x1="200" y1="28" x2="200" y2="164"/>
+        <line class="grid" x1="300" y1="28" x2="300" y2="164"/>
+        <line class="grid" x1="500" y1="28" x2="500" y2="164"/>
+        <line class="grid" x1="600" y1="28" x2="600" y2="164"/>
+        <text class="axis" x="200" y="182" text-anchor="middle">0 s</text>
+        <text class="axis" x="300" y="182" text-anchor="middle">0.5</text>
+        <text class="axis" x="400" y="182" text-anchor="middle">1.0 s</text>
+        <text class="axis" x="500" y="182" text-anchor="middle">1.5</text>
+        <text class="axis" x="600" y="182" text-anchor="middle">2.0 s</text>
+
+        <g>
+          <title>Run 1, first answer (full precision): 1.81 s round trip</title>
+          <text x="188" y="52" text-anchor="end" font-size="13">Run 1 · first answer</text>
+          <rect class="hit" x="0" y="34" width="640" height="30"/>
+          <path class="bar" d="M200 36 h357.8 a4 4 0 0 1 4 4 v18 a4 4 0 0 1 -4 4 h-357.8 z"/>
+          <text class="val" x="568" y="53">1.81 s</text>
+        </g>
+        <g>
+          <title>Run 2, first answer (bf16): 1.20 s round trip</title>
+          <text x="188" y="97" text-anchor="end" font-size="13">Run 2 · first answer</text>
+          <rect class="hit" x="0" y="79" width="640" height="30"/>
+          <path class="bar" d="M200 81 h235.8 a4 4 0 0 1 4 4 v18 a4 4 0 0 1 -4 4 h-235.8 z"/>
+          <text class="val" x="446" y="98">1.20 s</text>
+        </g>
+        <g>
+          <title>Typical answer after the first (GPU compute, bf16): 0.17 s</title>
+          <text x="188" y="142" text-anchor="end" font-size="13">Typical answer</text>
+          <rect class="hit" x="0" y="124" width="640" height="30"/>
+          <path class="bar" d="M200 126 h30.6 a4 4 0 0 1 4 4 v18 a4 4 0 0 1 -4 4 h-30.6 z"/>
+          <text class="val" x="241" y="143">0.17 s</text>
+        </g>
+
+        <line class="budget" x1="400" y1="22" x2="400" y2="164"/>
+        <text class="axis" x="406" y="17">1 answer = 1.0 s of motion</text>
+      </svg>
+    </div>
+    <details>
+      <summary>Show as a table</summary>
+      <div class="table-scroll"><table>
+        <thead><tr><th>Measurement</th><th>Time</th><th>Where it came from</th></tr></thead>
+        <tbody>
+          <tr><td>Run 1, first answer (full precision)</td><td class="num">1.81 s</td><td>Robot-side log, round trip</td></tr>
+          <tr><td>Run 2, first answer (bf16)</td><td class="num">1.20 s</td><td>Robot-side log, round trip</td></tr>
+          <tr><td>Typical answer after the first</td><td class="num">0.17 s</td><td>Benchmark on the server's spare GPU, median of 7 calls</td></tr>
+        </tbody>
+      </table></div>
+    </details>
+  </div>
+
+  <p><strong>The good news:</strong> after the first answer, the GPU needs only <strong>0.17 s</strong> per answer, about six times faster than needed. The very first answer after loading took 0.83 s in the benchmark. So the arm should work once that one slow first answer is handled.</p>
+
+  <div class="table-scroll"><table>
+    <thead><tr><th>Model setting</th><th>First answer</th><th>Typical answer</th></tr></thead>
+    <tbody>
+      <tr><td>Default (what we ran)</td><td class="num">0.83 s</td><td class="num">0.17 s</td></tr>
+      <tr><td>5 refinement passes</td><td class="num">0.43 s</td><td class="num">0.13 s</td></tr>
+      <tr><td>3 refinement passes</td><td class="num">0.31 s</td><td class="num">0.11 s</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Fewer refinement passes are faster but may make the motion less accurate. We don't need them for speed.</p>
+</section>
+
+<section>
+  <h2>What to try next</h2>
+  <div class="options">
+    <div class="opt">
+      <div class="opt-head"><span class="chip info">Try first</span><h3>Stop-and-go mode</h3></div>
+      <p>A small script on Zyad's Mac makes the arm finish each second of motion, wait for the next answer, then continue. Movement will be choppy, but it should get through a full attempt. Written and checked, not yet run on the arm.</p>
+    </div>
+    <div class="opt">
+      <div class="opt-head"><span class="chip info">Then</span><h3>Smooth mode</h3></div>
+      <p>Warm up the model with a realistic request at the start of each session, or stop the robot from trusting the first slow answer. Then the arm can move continuously at the real 0.17 s speed.</p>
+    </div>
+    <div class="opt">
+      <div class="opt-head"><span class="chip warn">Alternative</span><h3>Any NVIDIA computer next to the arm</h3></div>
+      <p>If the lab has a Linux machine with an NVIDIA GPU of 16 GB or more, plugging the arm straight into it skips the server and tunnel entirely. LeRobot's normal local mode pauses briefly for each answer, which works fine at 0.17 s.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Good to know</h2>
+  <ul>
+    <li><strong>Don't recalibrate.</strong> If LeRobot asks, press Enter to use the existing file. Typing <code>c</code> writes new settings to the motors, and everyone's calibration file stops matching.</li>
+    <li><strong>Camera numbers can change</strong> when anything is replugged or an iPhone connects as a camera. Run <code>lerobot-find-cameras opencv</code> again if the arm acts blind.</li>
+    <li><strong>The stand camera is very wide.</strong> The arm takes up a small part of its picture, while the model was trained on closer third-person views. It may do better with tighter framing; let's decide together before moving any camera.</li>
+    <li><strong>When a run ends, the arm goes limp.</strong> Hold it if it's raised. Keep a hand near the power during runs.</li>
+    <li><strong>Still unknown:</strong> whether MolmoAct2 does the task on our arm, and whether it follows a changed instruction mid-run. The second question decides the VLM-over-VLA plan.</li>
+  </ul>
+  <footer>Zyad has a detailed technical handoff with every command, error, code reference and script, written for coding agents. Ask him for <code>MOLMOACT2_BRINGUP_2026-11-19.md</code>.</footer>
+</section>
+
+</main>
