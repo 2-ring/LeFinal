@@ -70,3 +70,34 @@ followed by Enter to redo it.
 - Keep `config.env` local; ports and camera indices differ between computers.
 
 Original hardware notes are in [docs/setup-notes.md](docs/setup-notes.md).
+
+## Run Molmo on Oscar
+
+After hardware setup, create the rollout environment on the Mac and copy the
+server files to your Oscar account. Replace `YOUR_ID` with your Oscar username.
+
+```bash
+python3.12 -m venv .venv
+.venv/bin/python -m pip install 'lerobot[core-scripts,feetech,remote]==0.7.0'
+export OSCAR_LOGIN=YOUR_ID@ssh.ccv.brown.edu
+ssh "$OSCAR_LOGIN" 'mkdir -p ~/lefinal-oscar'
+scp scripts/oscar/{setup.sh,serve.sh,so101.yaml} "$OSCAR_LOGIN:lefinal-oscar/"
+```
+
+Once per installation, run this on an Oscar compute node with internet access
+to install the server and cache the model weights:
+
+```bash
+cd ~/lefinal-oscar
+MOLMO_ROOT="/oscar/scratch/$USER/LeFinal/molmoact2" bash setup.sh
+```
+
+On the Mac, set `OSCAR_LOGIN` in each new launcher shell and run
+`bash scripts/oscar/start.sh`. It reuses an active Molmo job or submits a
+one-hour GPU job. Keep that terminal open after it reports ready.
+
+In a second Mac terminal, run `.venv/bin/python scripts/rollout_molmo.py`.
+Check the stand and wrist views in Rerun, then type `/start` to move the arm
+or `/stop` to end the rollout. The default task is “Pick up the red roll of
+tape.” Pass `--task "your instruction"` to change it. Each run saves joint
+targets, camera pairs, and request timings under `data/live_red_object/`.

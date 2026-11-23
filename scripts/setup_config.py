@@ -12,8 +12,10 @@ import sys
 import tempfile
 import time
 
+from camera_ids import macos_camera_ids
+
 ROOT = Path(__file__).resolve().parent.parent
-KEYS = ("FOLLOWER_PORT", "LEADER_PORT", "FOLLOWER_ID", "LEADER_ID", "ROBOT_CAMERAS")
+KEYS = ("FOLLOWER_PORT", "LEADER_PORT", "FOLLOWER_ID", "LEADER_ID", "ROBOT_CAMERAS", "MACOS_CAMERA_IDS")
 ASSIGNMENT = re.compile(r"^\s*(?:export\s+)?(" + "|".join(KEYS) + r")\s*=")
 
 
@@ -131,10 +133,11 @@ def configure_cameras(text):
     if answer not in ("", "y", "yes", "n", "no"):
         raise ValueError("Answer yes or no to the camera question.")
     if answer in ("n", "no"):
-        return "{}"
+        return {"ROBOT_CAMERAS": "{}", "MACOS_CAMERA_IDS": "{}"}
 
     # Save previews, then let the user assign the physical camera views.
     previews = Path(tempfile.mkdtemp(prefix="lefinal-cameras-"))
+    device_ids = macos_camera_ids() if sys.platform == "darwin" else []
     profiles = discover_cameras(previews)
     print(f"\nOpen the sample images in {previews} to identify the wrist and stand views.")
     print("Camera numbers can change after reconnecting devices or restarting the computer.")
@@ -144,10 +147,15 @@ def configure_cameras(text):
     if not isinstance(previous, dict) or any(not isinstance(value, dict) for value in previous.values()):
         raise ValueError("ROBOT_CAMERAS must be a JSON object in config.env.")
     cameras = {}
+    saved_ids = json.loads(read_value(text, "MACOS_CAMERA_IDS") or "{}")
+    selected_ids = {}
     # Retain names and device choices, but refresh capture settings from detection.
     for name in previous or ("wrist", "stand"):
         defaults = previous.get(name, {})
         default = defaults.get("index_or_path", "")
+        if sys.platform == "darwin" and name in saved_ids:
+            uid = saved_ids[name]
+            default = device_ids.index(uid) if uid in device_ids else ""
         while True:
             answer = input(f"\n{name} camera index or /dev/video path (or 'skip') [{default}]: ").strip()
             answer = answer or str(default)
@@ -163,6 +171,10 @@ def configure_cameras(text):
             if any(camera["index_or_path"] == device for camera in cameras.values()):
                 print("That device is already assigned to another view. Select a different camera.")
                 continue
+            if sys.platform == "darwin":
+                if not isinstance(device, int) or device >= len(device_ids):
+                    raise RuntimeError(f"Could not identify the macOS device for camera {device}. Rerun camera setup.")
+                selected_ids[name] = device_ids[device]
             cameras[name] = {
                 **{key: value for key, value in defaults.items() if key not in ("width", "height", "fps")},
                 **detected_camera_settings(device, profiles[device]),
@@ -196,7 +208,12 @@ def configure_cameras(text):
         print(f"\nCamera settings validated. Selected previews: {previews}")
     else:
         print("No cameras selected; teleoperation will run without images.")
-    return json.dumps(cameras, separators=(",", ":"))
+    if selected_ids and macos_camera_ids() != device_ids:
+        raise RuntimeError("The connected cameras changed during setup. Rerun camera setup.")
+    return {
+        "ROBOT_CAMERAS": json.dumps(cameras, separators=(",", ":")),
+        "MACOS_CAMERA_IDS": json.dumps(selected_ids, separators=(",", ":")),
+    }
 
 
 def update_config(text, settings):
@@ -266,7 +283,7 @@ def main():
             if not value or value.startswith("REPLACE_WITH_"):
                 raise RuntimeError(f"Set {key} in config.env before calibration-only setup.")
     else:
-        settings["ROBOT_CAMERAS"] = configure_cameras(text)
+        settings.update(configure_cameras(text))
 
     # Save only after arm detection and camera checks succeed, replacing the file atomically.
     updated = update_config(text, settings)

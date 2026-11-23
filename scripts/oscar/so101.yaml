@@ -1,0 +1,36 @@
+deployment: lefinal-so101
+model:
+  repo_or_path: lerobot/MolmoAct2-SO100_101-LeRobot
+  revision: 9adadbdf2ef15c9993161d61569c8ab0cf84417f
+  device: cuda
+execution:
+  supported_modes: [chunk]
+  action_fps: 30.0
+  warmup_calls: 2
+zenoh:
+  mode: peer
+  listen_endpoints: [tcp/127.0.0.1:7447]
+semantics: so101-degrees-gripper-percent-v1
+robot_type: so101_follower
+features:
+  - name: observation.state
+    shape: [6]
+    dtype: float32
+    names: [shoulder_pan.pos, shoulder_lift.pos, elbow_flex.pos, wrist_flex.pos, wrist_roll.pos, gripper.pos]
+    semantics: so101-degrees-gripper-percent-v1
+  - name: observation.images.cam0
+    shape: [224, 224, 3]
+    dtype: uint8
+    kind: rgb
+    semantics: rgb-stand-table-v1
+  - name: observation.images.cam1
+    shape: [224, 224, 3]
+    dtype: uint8
+    kind: rgb
+    semantics: rgb-wrist-v1
+action_feature:
+  name: action
+  shape: [6]
+  dtype: float32
+  names: [shoulder_pan.pos, shoulder_lift.pos, elbow_flex.pos, wrist_flex.pos, wrist_roll.pos, gripper.pos]
+  semantics: so101-degrees-gripper-percent-v1
